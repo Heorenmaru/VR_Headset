@@ -1,10 +1,104 @@
-import pandas as pd
 
 # Загрузка данных из CSV файла
-input_file = 'tc358870.csv'  # Укажите путь к вашему входному файлу
+input_file = 'output_ips1440x1440.csv'  # Укажите путь к вашему входному файлу
 output_file = 'output.csv'  # Укажите путь к выходному файлу
 
 # Чтение CSV файла
+f = open(input_file)
+data = f.readlines()
+f.close()
+
+data_fields = []
+for l in data:
+    if "name" in l:
+        continue
+    data_fields.append(l.split(',')) 
+
+
+start = 0
+stop = 0
+read = 0
+b_nb = 0
+addr = []
+data = []
+command = []
+commands = []
+for d in data_fields:
+    
+    if d[1] == '"address"':
+        start = 1
+        if d[6] == 'false':
+            command = []
+            read = 0
+            addr = []
+            data = []
+            command.append('W')
+            b_nb = 0
+        else:
+            read = 1
+            command.append('R')
+        continue
+        
+
+    if d[1] == '"data"':
+        if read == 0:
+            if b_nb<2:
+                addr.append(d[7].split('\n')[0])
+                b_nb +=1
+            else:
+                data.append(d[7].split('\n')[0])
+        else:
+            data.append(d[7].split('\n')[0])
+        continue
+    
+
+    if d[1] == '"stop"':
+        a = '0x'
+        for b in addr:
+            a = a+ b[2:]
+        d = '0x'
+        for b in data:
+            d = d+ b[2:]
+        command.append(a)
+        command.append(d)
+        if b_nb>0:
+            if command[1] == 'R':
+                commands.append(command[1:])
+            else:
+                commands.append(command)
+
+        continue
+    
+f=open(output_file, 'w')
+for s in commands:
+    comment = ''
+    if s[1] == '0x8520':
+        comment = '// Read Status'
+    
+    if '0x8C' in s[1]:
+        comment = '// E-EDID'
+    
+    f.write(f'{s}          {comment}\n')
+f.close()
+
+
+
+
+
+# name, type,       start_time,     duration,       "ack",  "address",  "read", "data"
+# "I2C","start",    0.000047083,    0.000000042,    ,,,
+# "I2C","address",  0.000050458,    0.000023458,    true,   0x0F,       false,
+# "I2C","start",    0.496360208,    0.000000042,    ,,,
+# "I2C","address",  0.496363583,    0.0000245,      true,   0x0F,       false,
+# "I2C","data",     0.496390667,    0.000024,       true,       ,            ,  0x85
+# "I2C","data",     0.496417333,    0.000024083,    true,       ,           ,   0x20
+# "I2C","start",    0.496443833,    0.000000042,    ,,,
+# "I2C","address",  0.496447208,    0.000026792,    true,   0x0F,       true,
+# "I2C","data",     0.496476458,    0.000024667,    false,      ,           ,   0x00
+# "I2C","stop",     0.496503583,    0.000000042,    ,,,
+
+
+exit()
 data = pd.read_csv(input_file)
 
 # Создание списка для хранения обработанных строк
