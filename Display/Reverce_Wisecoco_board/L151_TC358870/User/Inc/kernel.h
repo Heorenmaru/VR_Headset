@@ -1,5 +1,5 @@
 /*
- * au_logic.h
+ * 
  *
  *  Created on: Mar 16, 2022
  *      Author: Heorenmaru
@@ -9,9 +9,7 @@
 #define __KERNEL_H__
 
 
-//#include "protocol.h"
 
-//#include "radioconf.h"
 
 
 
